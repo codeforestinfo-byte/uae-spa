@@ -5,7 +5,7 @@ import TherapistHub from "../components/TherapistHub";
 import VoucherSystem from "../components/VoucherSystem";
 import ReviewsSection from "../components/ReviewsSection";
 import BookingWizard from "../components/BookingWizard";
-import { CATEGORIES } from "../data";
+import { CATEGORIES, SERVICES } from "../data";
 import { Star, MapPin, Clock, Sparkles, Award, X } from "lucide-react";
 
 export default function HomePage() {

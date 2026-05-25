@@ -29,49 +29,60 @@ export const ABU_DHABI_AREAS = [
 export const INITIAL_THERAPISTS: Therapist[] = [
   {
     id: "therapist-1",
-    name: "Mary",
+    name: "Maria",
     nationality: "Filipino",
-    specialties: ["Lava Clamshell Treatment", "Relaxation Massage", "VIP Signature Services"],
+    specialties: ["Lava Clamshell", "Relaxation Massage", "VIP Signature"],
     rating: 4.9,
     reviewsCount: 184,
-    avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150",
+    avatar: "https://ik.imagekit.io/cwchgveae/SPA%20UAE/image-19-1-470x470.jpg",
     status: TherapistStatus.AVAILABLE_NOW,
-    bio: "Mary is a master of deep-tissue heat therapies and the legendary Lava Clamshell massage. Highly requested for her calming aura."
+    bio: "Specializing in hot stone therapy and deep relaxation techniques with over 8 years of experience."
   },
   {
     id: "therapist-2",
-    name: "Wahidah",
+    name: "Siti",
     nationality: "Indonesian",
-    specialties: ["Single Massage", "Couple Massage", "Spa Highlights", "Traditional Balinese"],
+    specialties: ["Balinese Massage", "Couple Massage", "Spa Highlights"],
     rating: 4.8,
     reviewsCount: 142,
-    avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150",
+    avatar: "https://ik.imagekit.io/cwchgveae/SPA%20UAE/image-27-180x180.jpg",
     status: TherapistStatus.UNAVAILABLE,
     nextAvailableTime: "Today 6:30 PM",
-    bio: "Wahidah specializes in authentic Indonesian Balinese strokes that improve circulation and alleviate severe muscular fatigue."
+    bio: "Master of traditional Balinese and Indonesian spa rituals with a gentle, healing touch."
   },
   {
     id: "therapist-3",
-    name: "Jackey",
+    name: "Nalin",
     nationality: "Thai",
-    specialties: ["Lymphatic Drainage Massage", "Combination Packages", "Traditional Thai stretching"],
+    specialties: ["Thai Stretching", "Lymphatic Drainage", "Combo Packages"],
     rating: 4.9,
     reviewsCount: 198,
-    avatar: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=150",
+    avatar: "https://ik.imagekit.io/cwchgveae/SPA%20UAE/image-20-1-470x470.jpg",
     status: TherapistStatus.AVAILABLE_NOW,
-    bio: "Jackey blends rhythmic compression and acupressure to detoxify and release myofascial tightness. Expert in combination packages."
+    bio: "Expert in Thai yoga massage and lymphatic drainage therapy with 10+ years of practice."
   },
   {
     id: "therapist-4",
-    name: "Smile",
+    name: "Linh",
     nationality: "Vietnamese",
-    specialties: ["Anti-Cellulite Maderotherapy", "VIP Signature Services", "30-Minute Combo Treatments"],
+    specialties: ["Anti-Cellulite Maderotherapy", "VIP Signature", "30-min Combos"],
     rating: 4.9,
     reviewsCount: 130,
-    avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150",
+    avatar: "https://ik.imagekit.io/cwchgveae/SPA%20UAE/image-26-180x180.jpg",
     status: TherapistStatus.UNAVAILABLE,
     nextAvailableTime: "Tomorrow 10:00 AM",
-    bio: "Smile is famous for her rejuvenating wooden roller techniques (Maderotherapy) and custom fast-acting tension combos."
+    bio: "Certified maderotherapy specialist focusing on body sculpting and cellulite reduction."
+  },
+  {
+    id: "therapist-5",
+    name: "Amara",
+    nationality: "Thai",
+    specialties: ["Aromatherapy", "Couple Massage", "Hot Stone Therapy"],
+    rating: 4.9,
+    reviewsCount: 156,
+    avatar: "https://ik.imagekit.io/cwchgveae/SPA%20UAE/image-18-1-470x470.jpg",
+    status: TherapistStatus.AVAILABLE_NOW,
+    bio: "Holistic wellness therapist trained in aromatherapy and couple massage techniques."
   }
 ];
 

@@ -157,3 +157,11 @@ INSERT INTO services (name, description, duration, price, category_id, popular) 
   ('Signature Combination Massage', 'Blend of Thai stretching, Balinese pressure, and Swedish strokes.', 90, 320, (SELECT id FROM categories WHERE name = 'Combination Packages'), false),
   ('Innovative Elite 4-Hand Massage', 'Two expert therapists coordinate in perfect unison.', 75, 490, (SELECT id FROM categories WHERE name = 'VIP Signature Services'), true)
 ON CONFLICT DO NOTHING;
+
+INSERT INTO therapists (name, nationality, specialties, rating, reviews_count, avatar_url, status, next_available_time, bio) VALUES
+  ('Maria', 'Filipino', '{Lava Clamshell,Relaxation Massage,VIP Signature}', 4.9, 184, 'https://ik.imagekit.io/cwchgveae/SPA%20UAE/image-19-1-470x470.jpg', 'available', NULL, 'Specializing in hot stone therapy and deep relaxation techniques with over 8 years of experience.'),
+  ('Siti', 'Indonesian', '{Balinese Massage,Couple Massage,Spa Highlights}', 4.8, 142, 'https://ik.imagekit.io/cwchgveae/SPA%20UAE/image-27-180x180.jpg', 'unavailable', 'Today 6:30 PM', 'Master of traditional Balinese and Indonesian spa rituals with a gentle, healing touch.'),
+  ('Nalin', 'Thai', '{Thai Stretching,Lymphatic Drainage,Combo Packages}', 4.9, 198, 'https://ik.imagekit.io/cwchgveae/SPA%20UAE/image-20-1-470x470.jpg', 'available', NULL, 'Expert in Thai yoga massage and lymphatic drainage therapy with 10+ years of practice.'),
+  ('Linh', 'Vietnamese', '{Anti-Cellulite Maderotherapy,VIP Signature,30-min Combos}', 4.9, 130, 'https://ik.imagekit.io/cwchgveae/SPA%20UAE/image-26-180x180.jpg', 'unavailable', 'Tomorrow 10:00 AM', 'Certified maderotherapy specialist focusing on body sculpting and cellulite reduction.'),
+  ('Amara', 'Thai', '{Aromatherapy,Couple Massage,Hot Stone Therapy}', 4.9, 156, 'https://ik.imagekit.io/cwchgveae/SPA%20UAE/image-18-1-470x470.jpg', 'available', NULL, 'Holistic wellness therapist trained in aromatherapy and couple massage techniques.')
+ON CONFLICT DO NOTHING;

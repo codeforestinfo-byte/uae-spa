@@ -66,10 +66,8 @@ export default function HeroSection({ ratingAverage, totalReviewsCount, onBookNo
     const slide = SLIDES[index];
     if (bgImgRef.current) bgImgRef.current.src = slide.image;
     if (tagRef.current) {
-      const sparkle = tagRef.current.querySelector("svg");
       tagRef.current.innerHTML = "";
-      if (sparkle) tagRef.current.appendChild(sparkle);
-      tagRef.current.appendChild(document.createTextNode(" " + slide.tag));
+      tagRef.current.appendChild(document.createTextNode(slide.tag));
     }
     if (titleRef.current) titleRef.current.textContent = slide.title;
     if (subtitleRef.current) subtitleRef.current.textContent = slide.subtitle;
@@ -157,9 +155,8 @@ export default function HeroSection({ ratingAverage, totalReviewsCount, onBookNo
             <div className="max-w-2xl">
               <div
                 ref={tagRef}
-                className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md text-amber-300 px-4 py-1.5 rounded-full text-xs font-semibold border border-amber-400/20 mb-6"
+                className="inline-flex items-center bg-white/10 backdrop-blur-md text-amber-300 px-4 py-1.5 rounded-full text-xs font-semibold border border-amber-400/20 mb-6"
               >
-                <Sparkles className="w-3.5 h-3.5" />
                 {SLIDES[0].tag}
               </div>
 

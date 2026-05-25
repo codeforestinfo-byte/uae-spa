@@ -21,6 +21,18 @@ const SLIDES = [
     subtitle: "Holistic therapies that restore harmony between body, mind, and spirit.",
     tag: "Holistic Wellness",
   },
+  {
+    image: "https://ik.imagekit.io/cwchgveae/SPA%20UAE/image-2-768x788.jpg",
+    title: "Luxury Manicure & Nail Art",
+    subtitle: "Premium hand and nail treatments using organic products for a flawless finish.",
+    tag: "Nail Care",
+  },
+  {
+    image: "https://ik.imagekit.io/cwchgveae/SPA%20UAE/SErvices/Manicure.jpg",
+    title: "Complete Beauty Care",
+    subtitle: "From salt peels to rejuvenating facials — full beauty services in the comfort of your home.",
+    tag: "Beauty Care",
+  },
 ];
 
 const SERVICES = [
@@ -64,9 +76,8 @@ export default function HeroSection({ ratingAverage, totalReviewsCount, onBookNo
   };
 
   const animateIn = () => {
-    const elements = [bgImgRef.current, overlayRef.current, tagRef.current, titleRef.current, subtitleRef.current, infoRef.current];
-    gsap.killTweensOf(elements);
-    gsap.killTweensOf(buttonsRef.current?.children);
+    const elems = [bgImgRef.current, overlayRef.current, tagRef.current, titleRef.current, subtitleRef.current, infoRef.current].filter(Boolean);
+    gsap.killTweensOf(elems);
 
     const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
     tl.fromTo(bgImgRef.current, { scale: 1.08, opacity: 0.6 }, { scale: 1, opacity: 1, duration: 1.4, ease: "power4.out" });
@@ -75,7 +86,10 @@ export default function HeroSection({ ratingAverage, totalReviewsCount, onBookNo
     tl.fromTo(titleRef.current, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7 }, "-=0.3");
     tl.fromTo(subtitleRef.current, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6 }, "-=0.4");
     tl.fromTo(infoRef.current, { y: 15, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5 }, "-=0.3");
-    tl.fromTo(buttonsRef.current?.children, { y: 15, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, stagger: 0.08 }, "-=0.2");
+    if (buttonsRef.current?.children) {
+      gsap.killTweensOf(buttonsRef.current.children);
+      tl.fromTo(buttonsRef.current.children, { y: 15, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, stagger: 0.08 }, "-=0.2");
+    }
   };
 
   const goToSlide = (index: number) => {
@@ -83,7 +97,9 @@ export default function HeroSection({ ratingAverage, totalReviewsCount, onBookNo
     currentRef.current = target;
     setCurrentSlide(target);
     updateContent(target);
-    animateIn();
+    const img = new Image();
+    img.onload = () => animateIn();
+    img.src = SLIDES[target].image;
   };
 
   const nextSlide = () => goToSlide(currentRef.current + 1);
@@ -91,8 +107,12 @@ export default function HeroSection({ ratingAverage, totalReviewsCount, onBookNo
 
   useEffect(() => {
     updateContent(0);
-    animateIn();
-    autoTimerRef.current = setInterval(() => nextSlide(), 6000);
+    const img = new Image();
+    img.onload = () => {
+      animateIn();
+      autoTimerRef.current = setInterval(() => nextSlide(), 6000);
+    };
+    img.src = SLIDES[0].image;
 
     if (servicesRef.current) {
       gsap.fromTo(

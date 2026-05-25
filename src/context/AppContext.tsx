@@ -1,16 +1,26 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Therapist, TherapistStatus, Service, Review, Appointment } from "../types";
-import { INITIAL_THERAPISTS, SERVICES, INITIAL_REVIEWS } from "../data";
+import { SERVICES, INITIAL_REVIEWS } from "../data";
+import {
+  fetchServices,
+  fetchTherapists,
+  fetchReviews,
+  updateTherapistStatus,
+  insertReview,
+  insertAppointment,
+} from "../lib/api";
 
 interface AppContextType {
   therapists: Therapist[];
   reviews: Review[];
+  services: Service[];
   bookingOpen: boolean;
   preSelectedService: Service | null;
   preSelectedTherapist: Therapist | null;
   initialOrderNow: boolean;
   totalReviewsCount: number;
   ratingAverage: string;
+  loading: boolean;
   setBookingOpen: (v: boolean) => void;
   setPreSelectedService: (v: Service | null) => void;
   setPreSelectedTherapist: (v: Therapist | null) => void;
@@ -27,21 +37,43 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [therapists, setTherapists] = useState<Therapist[]>(INITIAL_THERAPISTS);
+  const [therapists, setTherapists] = useState<Therapist[]>([]);
   const [reviews, setReviews] = useState<Review[]>(INITIAL_REVIEWS);
+  const [services, setServices] = useState<Service[]>(SERVICES);
+  const [loading, setLoading] = useState(true);
   const [bookingOpen, setBookingOpen] = useState(false);
   const [preSelectedService, setPreSelectedService] = useState<Service | null>(null);
   const [preSelectedTherapist, setPreSelectedTherapist] = useState<Therapist | null>(null);
   const [initialOrderNow, setInitialOrderNow] = useState(false);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const [dbTherapists, dbReviews, dbServices] = await Promise.all([
+          fetchTherapists(),
+          fetchReviews(),
+          fetchServices(),
+        ]);
+        if (dbTherapists.length) setTherapists(dbTherapists);
+        if (dbReviews.length) setReviews(dbReviews);
+        if (dbServices.length) setServices(dbServices);
+      } catch (e) {
+        console.warn("Supabase fetch failed, using local data", e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
 
   const totalReviewsCount = reviews.length;
   const ratingAverage = (
     reviews.reduce((acc, r) => acc + r.rating, 0) / (totalReviewsCount || 1)
   ).toFixed(1);
 
-  const handleToggleTherapistStatus = (therapistId: string) => {
-    setTherapists((prev) =>
-      prev.map((t) => {
+  const handleToggleTherapistStatus = async (therapistId: string) => {
+    setTherapists((prev) => {
+      const updated = prev.map((t) => {
         if (t.id === therapistId) {
           const nextStatus =
             t.status === TherapistStatus.AVAILABLE_NOW
@@ -55,12 +87,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
           };
         }
         return t;
-      })
-    );
+      });
+      const t = updated.find((x) => x.id === therapistId);
+      if (t) {
+        updateTherapistStatus(
+          therapistId,
+          t.status === TherapistStatus.AVAILABLE_NOW ? "available" : "unavailable",
+          t.nextAvailableTime
+        );
+      }
+      return updated;
+    });
   };
 
   const handleBookImmediate = (therapist: Therapist) => {
-    const srv = SERVICES.find((s) => s.category === therapist.specialties[0]) || SERVICES[0];
+    const srv = services.find((s) => s.category === therapist.specialties[0]) || services[0];
     setPreSelectedTherapist(therapist);
     setPreSelectedService(srv);
     setInitialOrderNow(true);
@@ -68,7 +109,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const handleBookScheduled = (therapist: Therapist) => {
-    const srv = SERVICES.find((s) => s.category === therapist.specialties[0]) || SERVICES[0];
+    const srv = services.find((s) => s.category === therapist.specialties[0]) || services[0];
     setPreSelectedTherapist(therapist);
     setPreSelectedService(srv);
     setInitialOrderNow(false);
@@ -79,17 +120,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setPreSelectedService(service);
     const match = therapists.find((t) => t.specialties.includes(service.category)) || therapists[0];
     setPreSelectedTherapist(match);
-    setInitialOrderNow(match.status === TherapistStatus.AVAILABLE_NOW);
+    setInitialOrderNow(match?.status === TherapistStatus.AVAILABLE_NOW);
     setBookingOpen(true);
   };
 
-  const handleBookingConfirmed = (appointment: Appointment) => {
+  const handleBookingConfirmed = async (appointment: Appointment) => {
+    try {
+      await insertAppointment(appointment);
+    } catch (e) {
+      console.warn("Failed to save appointment to Supabase", e);
+    }
     setTherapists((prev) =>
-      prev.map((t) => (t.id === appointment.therapistId ? { ...t, reviewsCount: t.reviewsCount + 1 } : t))
+      prev.map((t) =>
+        t.id === appointment.therapistId ? { ...t, reviewsCount: t.reviewsCount + 1 } : t
+      )
     );
   };
 
-  const handleAddReview = (newReview: Review) => {
+  const handleAddReview = async (newReview: Review) => {
+    try {
+      await insertReview(newReview);
+    } catch (e) {
+      console.warn("Failed to save review to Supabase", e);
+    }
     setReviews((prev) => [newReview, ...prev]);
     setTherapists((prev) =>
       prev.map((t) => {
@@ -98,7 +151,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
           return {
             ...t,
             reviewsCount: t.reviewsCount + 1,
-            rating: Math.min(5, Number(((t.rating * t.reviewsCount + newReview.rating) / (t.reviewsCount + 1)).toFixed(1))),
+            rating: Math.min(
+              5,
+              Number(
+                ((t.rating * t.reviewsCount + newReview.rating) / (t.reviewsCount + 1)).toFixed(1)
+              )
+            ),
           };
         }
         return t;
@@ -107,11 +165,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const openBooking = (service?: Service, therapist?: Therapist) => {
-    const s = service || SERVICES[0];
+    const s = service || services[0];
     const t = therapist || therapists.find((th) => th.specialties.includes(s.category)) || therapists[0];
     setPreSelectedService(s);
     setPreSelectedTherapist(t);
-    setInitialOrderNow(t.status === TherapistStatus.AVAILABLE_NOW);
+    setInitialOrderNow(t?.status === TherapistStatus.AVAILABLE_NOW);
     setBookingOpen(true);
   };
 
@@ -120,12 +178,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
       value={{
         therapists,
         reviews,
+        services,
         bookingOpen,
         preSelectedService,
         preSelectedTherapist,
         initialOrderNow,
         totalReviewsCount,
         ratingAverage,
+        loading,
         setBookingOpen,
         setPreSelectedService,
         setPreSelectedTherapist,

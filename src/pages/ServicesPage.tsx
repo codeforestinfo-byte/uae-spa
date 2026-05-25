@@ -5,13 +5,13 @@ import { SERVICES, CATEGORIES } from "../data";
 import { Sparkles, ArrowRight } from "lucide-react";
 
 export default function ServicesPage() {
-  const { therapists, handleToggleTherapistStatus, handleBookImmediate, handleBookScheduled, handleBookService } = useApp();
+  const { therapists, services, handleToggleTherapistStatus, handleBookImmediate, handleBookScheduled, handleBookService } = useApp();
   const [chosenCategory, setChosenCategory] = useState("All");
   const [showAll, setShowAll] = useState(false);
 
   const filtered = chosenCategory === "All"
-    ? SERVICES
-    : SERVICES.filter((s) => s.category.toLowerCase().includes(chosenCategory.toLowerCase()));
+    ? services
+    : services.filter((s) => s.category.toLowerCase().includes(chosenCategory.toLowerCase()));
 
   const displayed = showAll ? filtered : filtered.slice(0, 6);
 

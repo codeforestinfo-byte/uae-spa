@@ -5,7 +5,7 @@ import TherapistHub from "../components/TherapistHub";
 import VoucherSystem from "../components/VoucherSystem";
 import ReviewsSection from "../components/ReviewsSection";
 import BookingWizard from "../components/BookingWizard";
-import { SERVICES, CATEGORIES } from "../data";
+import { CATEGORIES } from "../data";
 import { Star, MapPin, Clock, Sparkles, Award, X } from "lucide-react";
 
 export default function HomePage() {
@@ -25,6 +25,7 @@ export default function HomePage() {
     handleBookService,
     handleBookingConfirmed,
     handleAddReview,
+    services,
   } = useApp();
 
   const [activeTab, setActiveTab] = useState("services");
@@ -35,8 +36,8 @@ export default function HomePage() {
   const [directionsOpen, setDirectionsOpen] = useState(false);
 
   const filteredServices = chosenCategory === "All"
-    ? SERVICES
-    : SERVICES.filter((s) =>
+    ? services
+    : services.filter((s) =>
         s.category.toLowerCase().includes(chosenCategory.toLowerCase()) ||
         chosenCategory.toLowerCase().includes(s.category.toLowerCase())
       );

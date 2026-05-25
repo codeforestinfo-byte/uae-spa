@@ -1,0 +1,6 @@
+{
+  "name": "Innovative Beauty and Wellness",
+  "description": "Premium home-service spa and massage booking platform in Abu Dhabi, featuring stylist availability scheduling and online booking.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

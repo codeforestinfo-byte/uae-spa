@@ -1,32 +1,37 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
-import { Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
+import { Star, MapPin, Sparkles, ShieldCheck, ChevronLeft, ChevronRight } from "lucide-react";
 
 const SLIDES = [
   {
     image: "https://ik.imagekit.io/cwchgveae/SPA%20UAE/attractive-african-woman-enjoying-face-massage-spa-salon.jpg",
     title: "Signature Spa Treatments",
     subtitle: "Rejuvenate with lava clamshell rituals & organic aromatherapy",
+    tag: "Premium Wellness",
   },
   {
     image: "https://ik.imagekit.io/cwchgveae/SPA%20UAE/beautiful-african-woman-smiling-enjoying-massage-with-closed-eyes-spa-salon.jpg",
     title: "Luxury Beauty & Skincare",
     subtitle: "Premium organic facials and radiant beauty therapies",
+    tag: "Beauty Care",
   },
   {
     image: "https://ik.imagekit.io/cwchgveae/SPA%20UAE/coconut-oil-tropical-leaves-fresh-coconuts-spa-coconut-products-light-wooden-surface.jpg",
     title: "Therapeutic Massage",
     subtitle: "Deep tissue, hot stone & lymphatic drainage by experts",
+    tag: "Massage Therapy",
   },
   {
     image: "https://ik.imagekit.io/cwchgveae/SPA%20UAE/spa-still-life-with-beauty-products.jpg",
     title: "Wellness & Relaxation",
     subtitle: "Holistic wellness tailored to your mind and body",
+    tag: "Holistic Wellness",
   },
   {
     image: "https://ik.imagekit.io/cwchgveae/SPA%20UAE/spa-treatment-dark-wall.jpg",
     title: "Premium Home Spa",
-    subtitle: "Experience luxury wellness at your doorstep",
+    subtitle: "Experience luxury wellness at your doorstep in Abu Dhabi",
+    tag: "Home Service",
   },
 ];
 
@@ -40,209 +45,258 @@ const SERVICES = [
 ];
 
 interface HeroSectionProps {
+  ratingAverage: string;
+  totalReviewsCount: number;
   onBookNow: () => void;
 }
 
-export default function HeroSection({ onBookNow }: HeroSectionProps) {
+export default function HeroSection({ ratingAverage, totalReviewsCount, onBookNow }: HeroSectionProps) {
+  const [currentSlide, setCurrentSlide] = useState(0);
   const sectionRef = useRef<HTMLDivElement>(null);
-  const sliderRef = useRef<HTMLDivElement>(null);
+  const slideContentRef = useRef<HTMLDivElement>(null);
+  const tagRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
+  const infoRef = useRef<HTMLDivElement>(null);
+  const buttonsRef = useRef<HTMLDivElement>(null);
   const servicesRef = useRef<HTMLDivElement>(null);
-  const currentIndexRef = useRef(0);
-  const tlRef = useRef<gsap.core.Timeline>();
+  const bgRef = useRef<HTMLDivElement>(null);
   const autoTimerRef = useRef<ReturnType<typeof setInterval>>();
 
-  const animateSlide = (index: number, direction: 1 | -1) => {
-    const slide = SLIDES[index];
-
-    if (tlRef.current) tlRef.current.kill();
-
+  const animateIn = (index: number) => {
     const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
-    tlRef.current = tl;
 
-    if (sliderRef.current) {
-      const img = sliderRef.current.querySelector("img") as HTMLImageElement;
-      if (img) {
-        tl.fromTo(
-          img,
-          { scale: 1.1, opacity: 0.7 },
-          { scale: 1, opacity: 1, duration: 1.2, ease: "power4.out" },
-          0
-        );
-      }
+    if (bgRef.current) {
+      tl.fromTo(
+        bgRef.current,
+        { scale: 1.1, opacity: 0.7 },
+        { scale: 1, opacity: 1, duration: 1.4, ease: "power4.out" }
+      );
     }
+
+    tl.fromTo(
+      tagRef.current,
+      { y: 30, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.6 },
+      "-=0.6"
+    );
 
     if (titleRef.current) {
       tl.fromTo(
         titleRef.current,
         { y: 40, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.8 },
-        0.2
+        "-=0.3"
       );
     }
 
-    if (subtitleRef.current) {
-      tl.fromTo(
-        subtitleRef.current,
-        { y: 30, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.7 },
-        0.35
-      );
-    }
+    tl.fromTo(
+      subtitleRef.current,
+      { y: 30, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.7 },
+      "-=0.4"
+    );
+
+    tl.fromTo(
+      infoRef.current,
+      { y: 20, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.5 },
+      "-=0.3"
+    );
+
+    tl.fromTo(
+      buttonsRef.current?.children,
+      { y: 20, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.4, stagger: 0.1 },
+      "-=0.2"
+    );
   };
 
   const goToSlide = (index: number) => {
-    currentIndexRef.current = index;
-    setSlideContent(index);
-    animateSlide(index, 1);
+    setCurrentSlide(index);
+    animateIn(index);
     resetAutoPlay();
   };
 
-  const setSlideContent = (index: number) => {
-    const slide = SLIDES[index];
-    if (sliderRef.current) {
-      const img = sliderRef.current.querySelector("img") as HTMLImageElement;
-      if (img) img.src = slide.image;
-    }
-    if (titleRef.current) titleRef.current.textContent = slide.title;
-    if (subtitleRef.current) subtitleRef.current.textContent = slide.subtitle;
-  };
-
   const nextSlide = () => {
-    const next = (currentIndexRef.current + 1) % SLIDES.length;
+    const next = (currentSlide + 1) % SLIDES.length;
     goToSlide(next);
   };
 
   const prevSlide = () => {
-    const prev = (currentIndexRef.current - 1 + SLIDES.length) % SLIDES.length;
+    const prev = (currentSlide - 1 + SLIDES.length) % SLIDES.length;
     goToSlide(prev);
   };
 
   const resetAutoPlay = () => {
     if (autoTimerRef.current) clearInterval(autoTimerRef.current);
-    autoTimerRef.current = setInterval(nextSlide, 5000);
+    autoTimerRef.current = setInterval(nextSlide, 6000);
   };
 
   useEffect(() => {
-    animateSlide(0, 1);
-    autoTimerRef.current = setInterval(nextSlide, 5000);
+    animateIn(0);
+    autoTimerRef.current = setInterval(nextSlide, 6000);
 
     if (servicesRef.current) {
       gsap.fromTo(
         servicesRef.current.children,
         { y: 40, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.6, stagger: 0.08, delay: 0.8, ease: "power3.out" }
+        { y: 0, opacity: 1, duration: 0.6, stagger: 0.08, delay: 0.5, ease: "power3.out" }
       );
     }
 
     return () => {
       if (autoTimerRef.current) clearInterval(autoTimerRef.current);
-      if (tlRef.current) tlRef.current.kill();
     };
   }, []);
 
+  const slide = SLIDES[currentSlide];
+
   return (
-    <section ref={sectionRef} className="relative overflow-hidden bg-gradient-to-b from-[#faf6f1] via-white to-[#f5ede4] py-8 md:py-12">
-      {/* Decorations */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-gradient-to-b from-pink-100/40 to-transparent blur-2xl" />
-        <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-amber-100/30 blur-3xl" />
-        <div className="absolute -bottom-20 -left-20 w-72 h-72 rounded-full bg-pink-100/30 blur-3xl" />
-      </div>
+    <section ref={sectionRef} className="relative overflow-hidden bg-[#1a1a1a]">
+      {/* Fullscreen slider */}
+      <div className="relative h-screen min-h-[600px] max-h-[900px]">
+        {/* Background image */}
+        <div ref={bgRef} className="absolute inset-0">
+          <img
+            src={slide.image}
+            alt={slide.title}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-black/50" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+        </div>
 
-      <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
-        {/* Slider */}
-        <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
-          <div className="w-full lg:w-[55%]">
-            <div className="relative">
+        {/* Decorative overlay pattern */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-0 w-1/3 h-full bg-gradient-to-r from-pink-500/10 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-400/40 to-transparent" />
+        </div>
+
+        {/* Navigation arrows */}
+        <button
+          onClick={prevSlide}
+          className="absolute left-6 top-1/2 -translate-y-1/2 z-20 bg-white/10 backdrop-blur-sm hover:bg-white/25 text-white p-3 rounded-full transition-all hover:scale-110 cursor-pointer border border-white/10"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+        <button
+          onClick={nextSlide}
+          className="absolute right-6 top-1/2 -translate-y-1/2 z-20 bg-white/10 backdrop-blur-sm hover:bg-white/25 text-white p-3 rounded-full transition-all hover:scale-110 cursor-pointer border border-white/10"
+        >
+          <ChevronRight className="w-5 h-5" />
+        </button>
+
+        {/* Slide counter */}
+        <div className="absolute top-8 right-8 z-20 text-white/60 text-xs tracking-widest font-mono">
+          {String(currentSlide + 1).padStart(2, "0")} / {String(SLIDES.length).padStart(2, "0")}
+        </div>
+
+        {/* Content */}
+        <div ref={slideContentRef} className="relative z-10 h-full flex items-center">
+          <div className="max-w-7xl mx-auto px-6 sm:px-10 w-full">
+            <div className="max-w-2xl">
               <div
-                className="relative overflow-hidden shadow-2xl bg-white"
-                style={{
-                  clipPath: "polygon(24px 0%, calc(100% - 24px) 0%, 100% 24px, 100% calc(100% - 24px), calc(100% - 24px) 100%, 24px 100%, 0% calc(100% - 24px), 0% 24px)",
-                }}
+                ref={tagRef}
+                className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md text-amber-300 px-4 py-1.5 rounded-full text-xs font-semibold border border-amber-400/20 mb-6"
               >
-                <div ref={sliderRef} className="aspect-[4/5] relative">
-                  <img
-                    src={SLIDES[0].image}
-                    alt="Spa"
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+                <Sparkles className="w-3.5 h-3.5" />
+                {slide.tag}
+              </div>
+
+              <h1
+                ref={titleRef}
+                className="font-serif-spa text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white leading-tight mb-4"
+              >
+                {slide.title}
+              </h1>
+
+              <p
+                ref={subtitleRef}
+                className="text-white/70 text-base sm:text-lg md:text-xl max-w-lg leading-relaxed mb-6"
+              >
+                {slide.subtitle}
+              </p>
+
+              <div ref={infoRef} className="flex flex-wrap items-center gap-4 mb-8">
+                <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm text-amber-300 px-3.5 py-1.5 rounded-full border border-white/10 text-sm">
+                  <Star className="w-4 h-4 fill-current" />
+                  <strong>{ratingAverage}</strong>
+                  <span className="text-white/50">({totalReviewsCount} reviews)</span>
                 </div>
+                <div className="flex items-center gap-1.5 text-white/60 text-sm">
+                  <MapPin className="w-4 h-4" />
+                  Al Zahiyah, Abu Dhabi
+                </div>
+                <div className="flex items-center gap-1.5 text-emerald-400 text-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  Opens at 11:05 am
+                </div>
+              </div>
 
+              <div ref={buttonsRef} className="flex flex-wrap items-center gap-4">
                 <button
-                  onClick={prevSlide}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/60 backdrop-blur-sm hover:bg-white text-stone-700 p-2.5 rounded-full shadow-lg transition-all hover:scale-110 cursor-pointer"
+                  onClick={onBookNow}
+                  className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white px-8 py-3.5 rounded-xl font-bold text-sm shadow-xl shadow-pink-500/30 transition-all hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2"
                 >
-                  <ChevronLeft className="w-4 h-4" />
+                  <Sparkles className="w-4 h-4" />
+                  Book Appointment
                 </button>
-                <button
-                  onClick={nextSlide}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white/60 backdrop-blur-sm hover:bg-white text-stone-700 p-2.5 rounded-full shadow-lg transition-all hover:scale-110 cursor-pointer"
-                >
-                  <ChevronRight className="w-4 h-4" />
+                <button className="bg-white/10 backdrop-blur-md hover:bg-white/20 text-white px-7 py-3.5 rounded-xl font-semibold text-sm border border-white/10 transition-all hover:scale-[1.02] flex items-center gap-2">
+                  View Services
                 </button>
               </div>
 
-              {/* Dots */}
-              <div className="flex items-center justify-center gap-2 mt-4">
-                {SLIDES.map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => goToSlide(idx)}
-                    className={`transition-all duration-300 cursor-pointer rounded-full ${
-                      idx === currentIndexRef.current
-                        ? "w-8 h-2 bg-gradient-to-r from-pink-400 to-amber-400"
-                        : "w-2 h-2 bg-stone-300 hover:bg-stone-400"
-                    }`}
-                  />
-                ))}
+              <div className="flex items-center gap-5 mt-6 text-xs text-white/40 font-medium">
+                <span className="flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  Licensed Therapists
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  Sterilized Equipment
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  Secure Payment
+                </span>
               </div>
             </div>
-          </div>
-
-          <div className="w-full lg:w-[45%] text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-100 to-amber-100 text-pink-800 px-4 py-1.5 rounded-full text-xs font-semibold border border-pink-200/50 mb-5">
-              <Sparkles className="w-3.5 h-3.5 text-pink-500" />
-              Innovative Beauty and Wellness
-            </div>
-
-            <h1
-              ref={titleRef}
-              className="font-serif-spa text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#1c2c31] leading-tight mb-4"
-            >
-              {SLIDES[0].title}
-            </h1>
-
-            <p
-              ref={subtitleRef}
-              className="text-stone-500 text-sm md:text-base leading-relaxed max-w-md mx-auto lg:mx-0 mb-6"
-            >
-              {SLIDES[0].subtitle}
-            </p>
-
-            <button
-              onClick={onBookNow}
-              className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white px-8 py-3 rounded-xl font-bold text-sm shadow-lg shadow-pink-200/50 transition-all duration-300 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
-            >
-              Book Appointment
-            </button>
           </div>
         </div>
 
-        {/* Services */}
-        <div ref={servicesRef} className="mt-10 md:mt-14">
-          <div className="flex items-center gap-4 mb-5">
-            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-pink-300/50 to-transparent" />
-            <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-[0.2em]">Our Services</span>
-            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-300/50 to-transparent" />
+        {/* Bottom gradient to services */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#1a1a1a] to-transparent z-10" />
+
+        {/* Dots */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
+          {SLIDES.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => goToSlide(idx)}
+              className={`transition-all duration-500 cursor-pointer rounded-full ${
+                idx === currentSlide
+                  ? "w-10 h-1.5 bg-gradient-to-r from-pink-400 to-amber-400"
+                  : "w-1.5 h-1.5 bg-white/30 hover:bg-white/50"
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Services Section */}
+      <div className="relative z-20 bg-[#1a1a1a] pb-16">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-pink-500/30 to-transparent" />
+            <span className="text-[10px] font-semibold text-white/30 uppercase tracking-[0.2em]">Our Signature Services</span>
+            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
           </div>
-          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 md:gap-3 max-w-4xl mx-auto">
+          <div ref={servicesRef} className="grid grid-cols-3 sm:grid-cols-6 gap-3">
             {SERVICES.map((service, idx) => (
               <div
                 key={idx}
-                className="group relative rounded-xl overflow-hidden bg-white shadow-md border border-pink-100/40 hover:shadow-xl hover:border-amber-200/50 transition-all duration-500 cursor-pointer"
+                className="group relative rounded-xl overflow-hidden bg-white/5 border border-white/10 hover:border-amber-400/30 transition-all duration-500 cursor-pointer"
               >
                 <div className="aspect-square overflow-hidden">
                   <img
@@ -252,16 +306,12 @@ export default function HeroSection({ onBookNow }: HeroSectionProps) {
                     loading="lazy"
                   />
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="absolute bottom-0 left-0 right-0 p-1.5 translate-y-2 group-hover:translate-y-0 transition-all duration-400">
-                  <span className="text-white text-[9px] md:text-[10px] font-semibold block truncate text-center">
-                    {service.name}
-                  </span>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="absolute bottom-0 left-0 right-0 p-2 translate-y-2 group-hover:translate-y-0 transition-all duration-400">
+                  <span className="text-white text-[10px] font-semibold block truncate text-center">{service.name}</span>
                 </div>
-                <div className="p-1.5 text-center group-hover:opacity-0 transition-opacity duration-300">
-                  <span className="text-[8px] md:text-[9px] font-medium text-stone-500 truncate block">
-                    {service.name}
-                  </span>
+                <div className="p-2 text-center group-hover:opacity-0 transition-opacity duration-300">
+                  <span className="text-[9px] font-medium text-white/40 truncate block">{service.name}</span>
                 </div>
               </div>
             ))}

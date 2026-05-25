@@ -1,13 +1,21 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import TherapistHub from "../components/TherapistHub";
-import { SERVICES, CATEGORIES } from "../data";
 import { Sparkles, ArrowRight } from "lucide-react";
 
 export default function ServicesPage() {
-  const { therapists, services, handleToggleTherapistStatus, handleBookImmediate, handleBookScheduled, handleBookService } = useApp();
-  const [chosenCategory, setChosenCategory] = useState("All");
+  const { therapists, services, categories, handleToggleTherapistStatus, handleBookImmediate, handleBookScheduled, handleBookService } = useApp();
+  const [searchParams] = useSearchParams();
+  const treatmentParam = searchParams.get("treatment");
+  const [chosenCategory, setChosenCategory] = useState(treatmentParam || "All");
   const [showAll, setShowAll] = useState(false);
+
+  useEffect(() => {
+    if (treatmentParam) {
+      setChosenCategory(treatmentParam);
+    }
+  }, [treatmentParam]);
 
   const filtered = chosenCategory === "All"
     ? services
@@ -40,7 +48,7 @@ export default function ServicesPage() {
           >
             All
           </button>
-          {CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => { setChosenCategory(cat); setShowAll(false); }}

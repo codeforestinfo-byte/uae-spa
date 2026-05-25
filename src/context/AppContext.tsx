@@ -5,6 +5,7 @@ import {
   fetchTherapists,
   fetchReviews,
   fetchCategories,
+  fetchAreas,
   updateTherapistStatus,
   insertReview,
   insertAppointment,
@@ -21,6 +22,8 @@ interface AppContextType {
   totalReviewsCount: number;
   ratingAverage: string;
   loading: boolean;
+  categories: string[];
+  areas: string[];
   setBookingOpen: (v: boolean) => void;
   setPreSelectedService: (v: Service | null) => void;
   setPreSelectedTherapist: (v: Therapist | null) => void;
@@ -41,6 +44,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [areas, setAreas] = useState<string[]>([]);
   const [bookingOpen, setBookingOpen] = useState(false);
   const [preSelectedService, setPreSelectedService] = useState<Service | null>(null);
   const [preSelectedTherapist, setPreSelectedTherapist] = useState<Therapist | null>(null);
@@ -49,15 +54,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     async function load() {
       try {
-        const [dbTherapists, dbReviews, dbServices, dbCategories] = await Promise.all([
+        const [dbTherapists, dbReviews, dbServices, dbCategories, dbAreas] = await Promise.all([
           fetchTherapists(),
           fetchReviews(),
           fetchServices(),
           fetchCategories(),
+          fetchAreas(),
         ]);
         if (dbTherapists.length) setTherapists(dbTherapists);
         if (dbReviews.length) setReviews(dbReviews);
         if (dbServices.length) setServices(dbServices);
+        if (dbCategories.length) setCategories(dbCategories);
+        if (dbAreas.length) setAreas(dbAreas);
       } catch (e) {
         console.warn("Supabase unavailable, using empty state", e);
       } finally {
@@ -187,6 +195,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         totalReviewsCount,
         ratingAverage,
         loading,
+        categories,
+        areas,
         setBookingOpen,
         setPreSelectedService,
         setPreSelectedTherapist,

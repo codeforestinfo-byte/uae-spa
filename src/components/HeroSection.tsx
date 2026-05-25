@@ -4,24 +4,29 @@ import { Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
 
 const SLIDES = [
   {
-    image: "https://ik.imagekit.io/cwchgveae/SPA%20UAE/image-3-768x788.jpg",
+    image: "https://ik.imagekit.io/cwchgveae/SPA%20UAE/attractive-african-woman-enjoying-face-massage-spa-salon.jpg",
     title: "Signature Spa Treatments",
     subtitle: "Rejuvenate with lava clamshell rituals & organic aromatherapy",
   },
   {
-    image: "https://ik.imagekit.io/cwchgveae/SPA%20UAE/image-2-768x788.jpg",
+    image: "https://ik.imagekit.io/cwchgveae/SPA%20UAE/beautiful-african-woman-smiling-enjoying-massage-with-closed-eyes-spa-salon.jpg",
     title: "Luxury Beauty & Skincare",
     subtitle: "Premium organic facials and radiant beauty therapies",
   },
   {
-    image: "https://ik.imagekit.io/cwchgveae/SPA%20UAE/image-32-o67bczsw7p5kvoxj17fhez66fb6rk8fw3rpft3uqyo.jpg",
+    image: "https://ik.imagekit.io/cwchgveae/SPA%20UAE/coconut-oil-tropical-leaves-fresh-coconuts-spa-coconut-products-light-wooden-surface.jpg",
     title: "Therapeutic Massage",
     subtitle: "Deep tissue, hot stone & lymphatic drainage by experts",
   },
   {
-    image: "https://ik.imagekit.io/cwchgveae/SPA%20UAE/image-4-1024x963.jpg",
+    image: "https://ik.imagekit.io/cwchgveae/SPA%20UAE/spa-still-life-with-beauty-products.jpg",
     title: "Wellness & Relaxation",
     subtitle: "Holistic wellness tailored to your mind and body",
+  },
+  {
+    image: "https://ik.imagekit.io/cwchgveae/SPA%20UAE/spa-treatment-dark-wall.jpg",
+    title: "Premium Home Spa",
+    subtitle: "Experience luxury wellness at your doorstep",
   },
 ];
 

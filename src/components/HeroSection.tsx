@@ -16,7 +16,7 @@ const SLIDES = [
     tag: "Beauty Care",
   },
   {
-    image: "https://ik.imagekit.io/cwchgveae/SPA%20UAE/coconut-oil-tropical-leaves-fresh-coconuts-spa-coconut-products-light-wooden-surface.jpg",
+    image: "https://ik.imagekit.io/cwchgveae/SPA%20UAE/image-32-o67bczsw7p5kvoxj17fhez66fb6rk8fw3rpft3uqyo.jpg",
     title: "Therapeutic Massage",
     subtitle: "Deep tissue, hot stone & lymphatic drainage by experts",
     tag: "Massage Therapy",
@@ -53,22 +53,29 @@ interface HeroSectionProps {
 export default function HeroSection({ ratingAverage, totalReviewsCount, onBookNow }: HeroSectionProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const sectionRef = useRef<HTMLDivElement>(null);
-  const slideContentRef = useRef<HTMLDivElement>(null);
   const tagRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
   const infoRef = useRef<HTMLDivElement>(null);
   const buttonsRef = useRef<HTMLDivElement>(null);
   const servicesRef = useRef<HTMLDivElement>(null);
-  const bgRef = useRef<HTMLDivElement>(null);
+  const bgImgRef = useRef<HTMLImageElement>(null);
   const autoTimerRef = useRef<ReturnType<typeof setInterval>>();
 
-  const animateIn = (index: number) => {
+  const updateSlideContent = (index: number) => {
+    const slide = SLIDES[index];
+    if (bgImgRef.current) bgImgRef.current.src = slide.image;
+    if (tagRef.current) tagRef.current.textContent = slide.tag;
+    if (titleRef.current) titleRef.current.textContent = slide.title;
+    if (subtitleRef.current) subtitleRef.current.textContent = slide.subtitle;
+  };
+
+  const animateIn = () => {
     const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
 
-    if (bgRef.current) {
+    if (bgImgRef.current) {
       tl.fromTo(
-        bgRef.current,
+        bgImgRef.current,
         { scale: 1.1, opacity: 0.7 },
         { scale: 1, opacity: 1, duration: 1.4, ease: "power4.out" }
       );
@@ -81,14 +88,12 @@ export default function HeroSection({ ratingAverage, totalReviewsCount, onBookNo
       "-=0.6"
     );
 
-    if (titleRef.current) {
-      tl.fromTo(
-        titleRef.current,
-        { y: 40, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.8 },
-        "-=0.3"
-      );
-    }
+    tl.fromTo(
+      titleRef.current,
+      { y: 40, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.8 },
+      "-=0.3"
+    );
 
     tl.fromTo(
       subtitleRef.current,
@@ -114,7 +119,8 @@ export default function HeroSection({ ratingAverage, totalReviewsCount, onBookNo
 
   const goToSlide = (index: number) => {
     setCurrentSlide(index);
-    animateIn(index);
+    updateSlideContent(index);
+    animateIn();
     resetAutoPlay();
   };
 
@@ -134,7 +140,8 @@ export default function HeroSection({ ratingAverage, totalReviewsCount, onBookNo
   };
 
   useEffect(() => {
-    animateIn(0);
+    updateSlideContent(0);
+    animateIn();
     autoTimerRef.current = setInterval(nextSlide, 6000);
 
     if (servicesRef.current) {
@@ -150,30 +157,25 @@ export default function HeroSection({ ratingAverage, totalReviewsCount, onBookNo
     };
   }, []);
 
-  const slide = SLIDES[currentSlide];
-
   return (
     <section ref={sectionRef} className="relative overflow-hidden bg-[#1a1a1a]">
-      {/* Fullscreen slider */}
       <div className="relative h-screen min-h-[600px] max-h-[900px]">
-        {/* Background image */}
-        <div ref={bgRef} className="absolute inset-0">
+        <div className="absolute inset-0">
           <img
-            src={slide.image}
-            alt={slide.title}
+            ref={bgImgRef}
+            src={SLIDES[0].image}
+            alt="Spa background"
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-black/50" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
         </div>
 
-        {/* Decorative overlay pattern */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-0 left-0 w-1/3 h-full bg-gradient-to-r from-pink-500/10 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-400/40 to-transparent" />
         </div>
 
-        {/* Navigation arrows */}
         <button
           onClick={prevSlide}
           className="absolute left-6 top-1/2 -translate-y-1/2 z-20 bg-white/10 backdrop-blur-sm hover:bg-white/25 text-white p-3 rounded-full transition-all hover:scale-110 cursor-pointer border border-white/10"
@@ -187,13 +189,11 @@ export default function HeroSection({ ratingAverage, totalReviewsCount, onBookNo
           <ChevronRight className="w-5 h-5" />
         </button>
 
-        {/* Slide counter */}
         <div className="absolute top-8 right-8 z-20 text-white/60 text-xs tracking-widest font-mono">
           {String(currentSlide + 1).padStart(2, "0")} / {String(SLIDES.length).padStart(2, "0")}
         </div>
 
-        {/* Content */}
-        <div ref={slideContentRef} className="relative z-10 h-full flex items-center">
+        <div className="relative z-10 h-full flex items-center">
           <div className="max-w-7xl mx-auto px-6 sm:px-10 w-full">
             <div className="max-w-2xl">
               <div
@@ -201,21 +201,21 @@ export default function HeroSection({ ratingAverage, totalReviewsCount, onBookNo
                 className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md text-amber-300 px-4 py-1.5 rounded-full text-xs font-semibold border border-amber-400/20 mb-6"
               >
                 <Sparkles className="w-3.5 h-3.5" />
-                {slide.tag}
+                {SLIDES[0].tag}
               </div>
 
               <h1
                 ref={titleRef}
                 className="font-serif-spa text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white leading-tight mb-4"
               >
-                {slide.title}
+                {SLIDES[0].title}
               </h1>
 
               <p
                 ref={subtitleRef}
                 className="text-white/70 text-base sm:text-lg md:text-xl max-w-lg leading-relaxed mb-6"
               >
-                {slide.subtitle}
+                {SLIDES[0].subtitle}
               </p>
 
               <div ref={infoRef} className="flex flex-wrap items-center gap-4 mb-8">
@@ -265,10 +265,8 @@ export default function HeroSection({ ratingAverage, totalReviewsCount, onBookNo
           </div>
         </div>
 
-        {/* Bottom gradient to services */}
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#1a1a1a] to-transparent z-10" />
 
-        {/* Dots */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
           {SLIDES.map((_, idx) => (
             <button
@@ -284,7 +282,6 @@ export default function HeroSection({ ratingAverage, totalReviewsCount, onBookNo
         </div>
       </div>
 
-      {/* Services Section */}
       <div className="relative z-20 bg-[#1a1a1a] pb-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="flex items-center gap-4 mb-6">

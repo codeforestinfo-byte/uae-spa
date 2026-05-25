@@ -246,8 +246,6 @@ export default function App() {
 
       {/* ================= HERO SECTION ================= */}
       <HeroSection
-        ratingAverage={ratingAverage}
-        totalReviewsCount={totalReviewsCount}
         onBookNow={() => {
           setPreSelectedService(SERVICES[0]);
           const activeT = therapists.find(t => t.status === TherapistStatus.AVAILABLE_NOW) || therapists[0];

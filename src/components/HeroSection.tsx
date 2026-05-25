@@ -52,7 +52,7 @@ interface HeroSectionProps {
 
 export default function HeroSection({ ratingAverage, totalReviewsCount, onBookNow }: HeroSectionProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const sectionRef = useRef<HTMLDivElement>(null);
+  const currentRef = useRef(0);
   const tagRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
@@ -62,87 +62,46 @@ export default function HeroSection({ ratingAverage, totalReviewsCount, onBookNo
   const bgImgRef = useRef<HTMLImageElement>(null);
   const autoTimerRef = useRef<ReturnType<typeof setInterval>>();
 
-  const updateSlideContent = (index: number) => {
+  const updateContent = (index: number) => {
     const slide = SLIDES[index];
     if (bgImgRef.current) bgImgRef.current.src = slide.image;
-    if (tagRef.current) tagRef.current.textContent = slide.tag;
+    if (tagRef.current) {
+      const sparkle = tagRef.current.querySelector("svg");
+      tagRef.current.innerHTML = "";
+      if (sparkle) tagRef.current.appendChild(sparkle);
+      tagRef.current.appendChild(document.createTextNode(" " + slide.tag));
+    }
     if (titleRef.current) titleRef.current.textContent = slide.title;
     if (subtitleRef.current) subtitleRef.current.textContent = slide.subtitle;
   };
 
   const animateIn = () => {
+    gsap.killTweensOf([bgImgRef.current, tagRef.current, titleRef.current, subtitleRef.current, infoRef.current, buttonsRef.current?.children]);
     const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
 
-    if (bgImgRef.current) {
-      tl.fromTo(
-        bgImgRef.current,
-        { scale: 1.1, opacity: 0.7 },
-        { scale: 1, opacity: 1, duration: 1.4, ease: "power4.out" }
-      );
-    }
-
-    tl.fromTo(
-      tagRef.current,
-      { y: 30, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.6 },
-      "-=0.6"
-    );
-
-    tl.fromTo(
-      titleRef.current,
-      { y: 40, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.8 },
-      "-=0.3"
-    );
-
-    tl.fromTo(
-      subtitleRef.current,
-      { y: 30, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.7 },
-      "-=0.4"
-    );
-
-    tl.fromTo(
-      infoRef.current,
-      { y: 20, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.5 },
-      "-=0.3"
-    );
-
-    tl.fromTo(
-      buttonsRef.current?.children,
-      { y: 20, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.4, stagger: 0.1 },
-      "-=0.2"
-    );
+    tl.fromTo(bgImgRef.current, { scale: 1.1, opacity: 0.7 }, { scale: 1, opacity: 1, duration: 1.4, ease: "power4.out" });
+    tl.fromTo(tagRef.current, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6 }, "-=0.6");
+    tl.fromTo(titleRef.current, { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8 }, "-=0.3");
+    tl.fromTo(subtitleRef.current, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7 }, "-=0.4");
+    tl.fromTo(infoRef.current, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5 }, "-=0.3");
+    tl.fromTo(buttonsRef.current?.children, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, stagger: 0.1 }, "-=0.2");
   };
 
   const goToSlide = (index: number) => {
-    setCurrentSlide(index);
-    updateSlideContent(index);
+    const target = ((index % SLIDES.length) + SLIDES.length) % SLIDES.length;
+    currentRef.current = target;
+    setCurrentSlide(target);
+    updateContent(target);
     animateIn();
-    resetAutoPlay();
   };
 
-  const nextSlide = () => {
-    const next = (currentSlide + 1) % SLIDES.length;
-    goToSlide(next);
-  };
-
-  const prevSlide = () => {
-    const prev = (currentSlide - 1 + SLIDES.length) % SLIDES.length;
-    goToSlide(prev);
-  };
-
-  const resetAutoPlay = () => {
-    if (autoTimerRef.current) clearInterval(autoTimerRef.current);
-    autoTimerRef.current = setInterval(nextSlide, 6000);
-  };
+  const nextSlide = () => goToSlide(currentRef.current + 1);
+  const prevSlide = () => goToSlide(currentRef.current - 1);
 
   useEffect(() => {
-    updateSlideContent(0);
+    updateContent(0);
     animateIn();
-    autoTimerRef.current = setInterval(nextSlide, 6000);
+    autoTimerRef.current = setInterval(() => nextSlide(), 6000);
 
     if (servicesRef.current) {
       gsap.fromTo(
@@ -158,7 +117,7 @@ export default function HeroSection({ ratingAverage, totalReviewsCount, onBookNo
   }, []);
 
   return (
-    <section ref={sectionRef} className="relative overflow-hidden bg-[#1a1a1a]">
+    <section className="relative overflow-hidden bg-[#1a1a1a]">
       <div className="relative h-screen min-h-[600px] max-h-[900px]">
         <div className="absolute inset-0">
           <img

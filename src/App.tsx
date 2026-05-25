@@ -11,6 +11,7 @@ import TherapistHub from "./components/TherapistHub";
 import BookingWizard from "./components/BookingWizard";
 import VoucherSystem from "./components/VoucherSystem";
 import ReviewsSection from "./components/ReviewsSection";
+import HeroSection from "./components/HeroSection";
 
 import {
   Star,
@@ -243,127 +244,21 @@ export default function App() {
         </div>
       </section>
 
-      {/* ================= HERO HEADING ROW ================= */}
-      <section className="bg-white pt-6 pb-4 px-4 border-b border-stone-100">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h1 className="text-2xl md:text-4xl font-serif-spa font-extrabold tracking-tight text-spa-navy">
-              Innovative Beauty and Wellness | HOME SERVICE SPA
-            </h1>
-            <div className="flex flex-wrap items-center gap-3 text-xs md:text-sm text-spa-navy/70 mt-2 font-medium">
-              <div className="flex items-center gap-1 bg-amber-50 text-amber-800 px-2.5 py-1 rounded-md border border-amber-100">
-                <Star className="w-4 h-4 fill-current text-amber-400" />
-                <strong className="font-bold">{ratingAverage}</strong>
-                <span className="text-slate-400">({totalReviewsCount} reviews)</span>
-              </div>
-              <span>•</span>
-              <span className="text-amber-700 font-semibold font-mono-spa">Closed • Opens at 11:05 am</span>
-              <span>•</span>
-              <button 
-                onClick={() => setDirectionsOpen(true)}
-                className="hover:text-spa-gold underline flex items-center gap-1 cursor-pointer font-mono-spa"
-              >
-                <MapPin className="w-3.5 h-3.5" />
-                <span>Al Zahiyah, Abu Dhabi</span>
-              </button>
-            </div>
-          </div>
-          
-          {/* Share/Heart Buttons */}
-          <div className="flex items-center gap-2.5">
-            <button 
-              onClick={() => {
-                navigator.clipboard.writeText(window.location.href);
-                alert("Site link copied to dashboard! Share this high-end home-spa with friends.");
-              }}
-              className="bg-white border border-[#eae3d5] p-2.5 rounded-full hover:bg-stone-50 cursor-pointer shadow-2xs text-[#1c2c31]/80 transition-transform hover:scale-105" 
-              title="Share business"
-            >
-              <Share2 className="w-4 h-4" />
-            </button>
-            <button 
-              onClick={() => setFavorited(!favorited)}
-              className="bg-white border border-[#eae3d5] p-2.5 rounded-full hover:bg-stone-50 cursor-pointer shadow-2xs transition-all flex items-center gap-1"
-              title="Add to Favorite"
-            >
-              <Heart className={`w-4 h-4 ${favorited ? "fill-rose-500 text-rose-500 animate-pulse" : "text-[#1c2c31]/80"}`} />
-              <span className="text-xs font-mono-spa font-bold">{favorited ? "Saved" : "Save"}</span>
-            </button>
-          </div>
-        </div>
-      </section>
+      {/* ================= HERO SECTION ================= */}
+      <HeroSection
+        ratingAverage={ratingAverage}
+        totalReviewsCount={totalReviewsCount}
+        onBookNow={() => {
+          setPreSelectedService(SERVICES[0]);
+          const activeT = therapists.find(t => t.status === TherapistStatus.AVAILABLE_NOW) || therapists[0];
+          setPreSelectedTherapist(activeT);
+          setInitialOrderNow(activeT.status === TherapistStatus.AVAILABLE_NOW);
+          setBookingOpen(true);
+        }}
+      />
 
       {/* ================= MAIN LAYOUT GRID ================= */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
-        
-        {/* Luxury Images Showcase */}
-        <section className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-8" id="spa-visual-portfolio">
-          {/* Main big image */}
-          <div className="md:col-span-7 rounded-2xl overflow-hidden relative group aspect-16/10 cursor-pointer" onClick={() => { setActiveGalleryIndex(0); setGalleryOpen(true); }}>
-            <img
-              src={carouselImages[0].url}
-              alt="Innovative Clamshell setup"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              referrerPolicy="no-referrer"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-            <div className="absolute bottom-5 left-5 text-white">
-              <span className="text-[10px] tracking-widest bg-rose-600/90 py-1 px-2.5 rounded-md uppercase font-mono-spa font-semibold inline-block mb-2">
-                Abu Dhabi Signature
-              </span>
-              <p className="font-serif-spa text-lg sm:text-xl font-bold">
-                Natural Heat Clamshell Therapies
-              </p>
-            </div>
-            {/* Play Button Overlay */}
-            <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-xs text-white p-2 rounded-full border border-white/30 hover:bg-white hover:text-spa-navy transition-colors">
-              <Maximize2 className="w-4 h-4" />
-            </div>
-          </div>
-
-          {/* Right Two Columns Images */}
-          <div className="md:col-span-5 flex flex-col gap-4">
-            {/* Top smaller */}
-            <div className="rounded-xl overflow-hidden relative group flex-1 min-h-[140px] cursor-pointer" onClick={() => { setActiveGalleryIndex(1); setGalleryOpen(true); }}>
-              <img
-                src={carouselImages[1].url}
-                alt="Organic oils"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                referrerPolicy="no-referrer"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
-              <div className="absolute bottom-3 left-4 text-white">
-                <p className="text-sm font-semibold">100% Organic Luxury Oils</p>
-              </div>
-            </div>
-
-            {/* Bottom smaller with trigger */}
-            <div className="rounded-xl overflow-hidden relative group flex-1 min-h-[140px] cursor-pointer" onClick={() => { setActiveGalleryIndex(2); setGalleryOpen(true); }}>
-              <img
-                src={carouselImages[2].url}
-                alt="Spa Room Action"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                referrerPolicy="no-referrer"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent text-white p-4 flex flex-col justify-between">
-                <span></span>
-                <div className="flex items-end justify-between">
-                  <p className="text-sm font-semibold">Professional Bed Setup</p>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setActiveGalleryIndex(0);
-                      setGalleryOpen(true);
-                    }}
-                    className="bg-white/20 hover:bg-white hover:text-spa-navy backdrop-blur-xs text-white py-1.5 px-3 rounded-lg text-xs font-bold flex items-center gap-1 transition-all"
-                  >
-                    <span>View Gallery</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* Content columns */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">

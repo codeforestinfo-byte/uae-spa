@@ -1,10 +1,10 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Therapist, TherapistStatus, Service, Review, Appointment } from "../types";
-import { SERVICES, INITIAL_REVIEWS } from "../data";
 import {
   fetchServices,
   fetchTherapists,
   fetchReviews,
+  fetchCategories,
   updateTherapistStatus,
   insertReview,
   insertAppointment,
@@ -38,8 +38,8 @@ const AppContext = createContext<AppContextType | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [therapists, setTherapists] = useState<Therapist[]>([]);
-  const [reviews, setReviews] = useState<Review[]>(INITIAL_REVIEWS);
-  const [services, setServices] = useState<Service[]>(SERVICES);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [bookingOpen, setBookingOpen] = useState(false);
   const [preSelectedService, setPreSelectedService] = useState<Service | null>(null);
@@ -49,16 +49,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     async function load() {
       try {
-        const [dbTherapists, dbReviews, dbServices] = await Promise.all([
+        const [dbTherapists, dbReviews, dbServices, dbCategories] = await Promise.all([
           fetchTherapists(),
           fetchReviews(),
           fetchServices(),
+          fetchCategories(),
         ]);
         if (dbTherapists.length) setTherapists(dbTherapists);
         if (dbReviews.length) setReviews(dbReviews);
         if (dbServices.length) setServices(dbServices);
       } catch (e) {
-        console.warn("Supabase fetch failed, using local data", e);
+        console.warn("Supabase unavailable, using empty state", e);
       } finally {
         setLoading(false);
       }

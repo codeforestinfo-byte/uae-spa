@@ -16,7 +16,7 @@ const SLIDES = [
     tag: "Beauty Care",
   },
   {
-    image: "https://ik.imagekit.io/cwchgveae/SPA%20UAE/image-32-o67bczsw7p5kvoxj17fhez66fb6rk8fw3rpft3uqyo.jpg",
+    image: "https://ik.imagekit.io/cwchgveae/SPA%20UAE/2150911815.jpg",
     title: "Therapeutic Massage",
     subtitle: "Deep tissue, hot stone & lymphatic drainage by experts",
     tag: "Massage Therapy",

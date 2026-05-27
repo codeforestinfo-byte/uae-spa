@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Therapist, Service, TherapistStatus, Appointment } from "../types";
 import { SERVICES, ABU_DHABI_AREAS } from "../data";
+import StripePaymentButton from "./StripePaymentButton";
 import {
   X,
   ChevronRight,
@@ -17,7 +18,8 @@ import {
   DollarSign,
   AlertCircle,
   Truck,
-  FileText
+  FileText,
+  Loader
 } from "lucide-react";
 
 interface BookingWizardProps {
@@ -57,7 +59,10 @@ export default function BookingWizard({
   const [customerAddress, setCustomerAddress] = useState("");
   
   // Payment Mode
-  const [paymentMethod, setPaymentMethod] = useState<"app" | "cash_or_card">("app");
+  const [paymentMethod, setPaymentMethod] = useState<"app" | "cash_or_card" | "google_pay">("app");
+  const [transactionId, setTransactionId] = useState<string | null>(null);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
   
   // Confirmed State
   const [confirmedBooking, setConfirmedBooking] = useState<Appointment | null>(null);
@@ -93,7 +98,7 @@ export default function BookingWizard({
     setSelectedTime("13:00");
   }, []);
 
-  // Countdown timer simulation for immediate dispatch order
+  // Countdown timer for immediate dispatch order
   useEffect(() => {
     let timer: any;
     if (confirmedBooking && confirmedBooking.orderNow && countdown > 1) {
@@ -118,6 +123,16 @@ export default function BookingWizard({
     setStep((prev) => Math.max(1, prev - 1));
   };
 
+  const handleStripePaymentSuccess = (transactionId: string) => {
+    setTransactionId(transactionId);
+    setPaymentMethod("google_pay");
+    setPaymentError(null);
+  };
+
+  const handleStripePaymentError = (error: string) => {
+    setPaymentError(error);
+  };
+
   const handleCompleteBooking = () => {
     if (!selectedService || !selectedTherapist) return;
 
@@ -134,6 +149,8 @@ export default function BookingWizard({
       paymentMethod,
       status: "confirmed",
       createdAt: new Date().toLocaleTimeString(),
+      transactionId: transactionId || undefined,
+      paymentStatus: paymentMethod === "google_pay" ? "completed" : paymentMethod === "cash_or_card" ? "pending" : "completed",
     };
 
     setConfirmedBooking(newAppointment);
@@ -263,7 +280,18 @@ export default function BookingWizard({
                   <div className="flex items-center gap-2">
                     <CreditCard className="w-3.5 h-3.5 text-spa-gold shrink-0" />
                     <span>
-                      Payment: <strong className="font-semibold uppercase">{confirmedBooking.paymentMethod === "app" ? "Paid Online (App Payment)" : "Pay on Arrival"}</strong>
+                      Payment: <strong className="font-semibold uppercase">
+                        {confirmedBooking.paymentMethod === "google_pay"
+                          ? "Google Pay"
+                          : confirmedBooking.paymentMethod === "app"
+                          ? "Paid Online (App Payment)"
+                          : "Pay on Arrival"}
+                      </strong>
+                      {confirmedBooking.transactionId && (
+                        <span className="text-[10px] text-green-600 font-mono-spa block">
+                          TXN: {confirmedBooking.transactionId}
+                        </span>
+                      )}
                     </span>
                   </div>
                 </div>
@@ -306,7 +334,7 @@ export default function BookingWizard({
                 )}
               </div>
 
-              {/* Map Simulator */}
+              {/* Dispatch Map */}
               <div className="mt-6 border border-[#eae3d5] rounded-xl overflow-hidden shadow-xs max-w-md mx-auto">
                 <div className="bg-stone-100 p-2 border-b border-[#eae3d5] flex items-center gap-1.5 text-[10px] font-mono-spa text-spa-navy/70 uppercase">
                   <Map className="w-3 h-3 text-spa-gold" />
@@ -703,53 +731,101 @@ export default function BookingWizard({
                     Step 5: Secure Payment Options
                   </h4>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {paymentError && (
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2 text-xs text-red-700">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      {paymentError}
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <button
                       type="button"
                       onClick={() => setPaymentMethod("app")}
-                      className={`p-5 rounded-2xl border text-left flex flex-col justify-between h-40 cursor-pointer transition-all ${
+                      className={`p-4 rounded-2xl border text-left flex flex-col justify-between h-36 cursor-pointer transition-all ${
                         paymentMethod === "app"
                           ? "border-spa-gold bg-[#fbfcfa] ring-1 ring-spa-gold/30"
                           : "border-[#eae3d5] bg-white hover:bg-stone-50"
                       }`}
                     >
-                      <div className="p-2.5 bg-[#c5a47e]/20 rounded-xl text-[#7d572b] self-start">
-                        <CreditCard className="w-5 h-5" />
+                      <div className="p-2 bg-[#c5a47e]/20 rounded-xl text-[#7d572b] self-start">
+                        <CreditCard className="w-4 h-4" />
                       </div>
                       <div>
-                        <span className="font-serif-spa font-bold text-sm block text-spa-navy">
-                          Pay by Mobile App / Online Card
+                        <span className="font-serif-spa font-bold text-[11px] block text-spa-navy">
+                          Online Card
                         </span>
-                        <p className="text-[11px] text-spa-navy/55 mt-1">
-                          Secure digital transaction. 15% automatic cashback voucher code included.
+                        <p className="text-[10px] text-spa-navy/55 mt-1">
+                          Instant secure payment. 15% cashback voucher.
                         </p>
                       </div>
                     </button>
 
+                    <div className={`p-4 rounded-2xl border flex flex-col justify-between transition-all ${
+                      paymentMethod === "google_pay"
+                        ? "border-spa-gold bg-[#fbfcfa] ring-1 ring-spa-gold/30"
+                        : "border-[#eae3d5] bg-white"
+                    }`}>
+                      <div className="p-2 bg-black/5 rounded-xl text-black self-start w-min">
+                        <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor">
+                          <path d="M22.7 12.4c0-.7-.1-1.1-.2-1.6H12v2.9h6.1c-.1.7-.6 1.8-1.7 2.5l-.1.1 2.5 1.9.2.1c1.5-1.4 2.4-3.5 2.4-5.9z" fill="#4285F4"/>
+                          <path d="M12 23c2.2 0 4-.7 5.3-1.9l-2.5-1.9c-.7.5-1.6.8-2.8.8-2.1 0-3.9-1.4-4.6-3.4l-.1.1-2.5 1.9-.1.1C4.9 20.5 8.2 23 12 23z" fill="#34A853"/>
+                          <path d="M7.4 14.6c-.2-.5-.3-1.1-.3-1.6s.1-1.1.3-1.6l-.1-.1-2.5-1.9-.1.1c-.5 1-.8 2.2-.8 3.5s.3 2.5.8 3.5l2.6-2z" fill="#FBBC04"/>
+                          <path d="M12 5.3c1.5 0 2.6.5 3.6 1.6l2.6-2.6C16 2.2 14.2 1.2 12 1.2 8.2 1.2 4.9 3.7 3.3 7.3l2.6 2c.6-2 2.4-3.4 4.5-3.4z" fill="#EA4335"/>
+                        </svg>
+                      </div>
+                      <div>
+                        <span className="font-serif-spa font-bold text-[11px] block text-spa-navy mb-1.5">
+                          Google Pay
+                        </span>
+                        {transactionId ? (
+                          <span className="text-[10px] text-green-600 font-semibold flex items-center gap-1">
+                            <CheckCircle className="w-3 h-3" />
+                            Paid
+                          </span>
+                        ) : (
+                          <StripePaymentButton
+                            price={selectedService?.price || 0}
+                            label={`${selectedService?.name || "Spa Service"} - ${selectedTherapist?.name || "Therapist"}`}
+                            onSuccess={handleStripePaymentSuccess}
+                            onError={handleStripePaymentError}
+                            disabled={isProcessingPayment}
+                          />
+                        )}
+                      </div>
+                    </div>
+
                     <button
                       type="button"
                       onClick={() => setPaymentMethod("cash_or_card")}
-                      className={`p-5 rounded-2xl border text-left flex flex-col justify-between h-40 cursor-pointer transition-all ${
+                      className={`p-4 rounded-2xl border text-left flex flex-col justify-between h-36 cursor-pointer transition-all ${
                         paymentMethod === "cash_or_card"
                           ? "border-spa-gold bg-[#fbfcfa] ring-1 ring-spa-gold/30"
                           : "border-[#eae3d5] bg-white hover:bg-stone-50"
                       }`}
                     >
-                      <div className="p-2.5 bg-[#1c2c31]/10 rounded-xl text-spa-navy self-start">
-                        <DollarSign className="w-5 h-5" />
+                      <div className="p-2 bg-[#1c2c31]/10 rounded-xl text-spa-navy self-start">
+                        <DollarSign className="w-4 h-4" />
                       </div>
                       <div>
-                        <span className="font-serif-spa font-bold text-sm block text-spa-navy">
-                          Pay on Arrival (Cash or Card)
+                        <span className="font-serif-spa font-bold text-[11px] block text-spa-navy">
+                          Pay on Arrival
                         </span>
-                        <p className="text-[11px] text-spa-navy/55 mt-1">
-                          No pre-payment. Secure your session and pay our therapist directly with cash or credit card machine.
+                        <p className="text-[10px] text-spa-navy/55 mt-1">
+                          Cash or card to therapist at your door.
                         </p>
                       </div>
                     </button>
                   </div>
 
-                  <div className="mt-8 bg-stone-50 border border-[#eae3d5] rounded-xl p-4 space-y-3 max-w-md mx-auto">
+                  {isProcessingPayment && (
+                    <div className="flex items-center justify-center gap-2 text-xs text-spa-navy/70">
+                      <Loader className="w-4 h-4 animate-spin" />
+                      Processing payment...
+                    </div>
+                  )}
+
+                  <div className="mt-6 bg-stone-50 border border-[#eae3d5] rounded-xl p-4 space-y-3 max-w-md mx-auto">
                     <h5 className="text-xs font-mono-spa font-bold uppercase text-spa-navy/70 border-b border-stone-200/60 pb-2">
                       Booking Session Summary
                     </h5>
@@ -764,6 +840,12 @@ export default function BookingWizard({
                           {isOrderNow ? "Instant Dispatch" : "Reservations"}
                         </span>
                       </div>
+                      {transactionId && (
+                        <div className="flex justify-between text-[10px]">
+                          <span>Transaction ID</span>
+                          <span className="font-mono-spa text-green-600">{transactionId}</span>
+                        </div>
+                      )}
                       <div className="flex justify-between border-t border-dashed border-stone-200 pt-2 font-bold text-sm text-spa-navy">
                         <span>Total Due</span>
                         <span className="font-mono-spa text-spa-gold">AED {selectedService?.price}</span>

@@ -54,7 +54,7 @@ export default function ReviewsSection({ reviews, onAddReview }: ReviewsSectionP
       date: new Date().toISOString().split("T")[0],
       comment,
       treatment,
-      verified: true, // Auto-verified for active simulator sessions
+      verified: true,
     };
 
     onAddReview(newReview);

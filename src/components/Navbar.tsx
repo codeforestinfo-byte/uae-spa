@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, Gift, MapPin, Clock, ChevronDown, Search } from "lucide-react";
+import { Menu, X, Gift, MapPin, Clock, ChevronDown, Search, User, LogOut, LayoutDashboard } from "lucide-react";
 import { useApp } from "../context/AppContext";
+import { useAuth } from "../context/AuthContext";
 
 const NAV_LINKS = [
   { label: "Home", path: "/" },
@@ -17,24 +18,38 @@ const TIME_OPTIONS = ["Any time", "Morning (9-12)", "Afternoon (12-5)", "Evening
 
 export default function Navbar() {
   const { categories, areas } = useApp();
+  const { user, profile, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<"treatment" | "area" | "time" | null>(null);
   const [selectedTreatment, setSelectedTreatment] = useState("All treatments");
   const [selectedArea, setSelectedArea] = useState("Abu Dhabi, UAE");
   const [selectedTime, setSelectedTime] = useState("Any time");
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setOpenDropdown(null);
       }
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false);
+      }
     };
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
+
+  const getInitials = (name: string) =>
+    name
+      ?.split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2) || "U";
 
   const handleSearch = () => {
     const params = new URLSearchParams();
@@ -167,6 +182,53 @@ export default function Navbar() {
             <Gift className="w-3.5 h-3.5 shrink-0" />
             <span className="hidden sm:inline">Gifts & Vouchers</span>
           </Link>
+
+          {user ? (
+            <div ref={userMenuRef} className="relative">
+              <button
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold cursor-pointer transition-colors overflow-hidden bg-spa-navy"
+              >
+                {profile?.avatar_url ? (
+                  <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-white">{getInitials(profile?.full_name || user.email || "")}</span>
+                )}
+              </button>
+              {userMenuOpen && (
+                <div className="absolute right-0 top-full mt-2 bg-white border border-[#eae3d5] rounded-xl shadow-lg py-1.5 min-w-[180px] z-50">
+                  <div className="px-4 py-2 border-b border-[#eae3d5]/60 mb-1">
+                    <p className="text-xs font-semibold text-spa-navy truncate">{profile?.full_name || "User"}</p>
+                    <p className="text-[10px] text-stone-400 truncate">{user.email}</p>
+                  </div>
+                  <Link
+                    to="/dashboard"
+                    onClick={() => setUserMenuOpen(false)}
+                    className="flex items-center gap-2 px-4 py-2 text-xs text-spa-navy hover:bg-stone-50 transition-colors"
+                  >
+                    <LayoutDashboard className="w-3.5 h-3.5 text-stone-400" />
+                    Dashboard
+                  </Link>
+                  <button
+                    onClick={async () => { await signOut(); setUserMenuOpen(false); navigate("/"); }}
+                    className="flex items-center gap-2 px-4 py-2 text-xs text-red-500 hover:bg-red-50 w-full text-left transition-colors cursor-pointer"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link
+              to="/login"
+              className="bg-spa-navy hover:bg-[#2c3d42] text-white text-xs font-bold py-2 px-4 rounded-full flex items-center gap-1.5 transition-all"
+            >
+              <User className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Sign In</span>
+            </Link>
+          )}
+
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className="bg-white hover:bg-stone-50 border border-[#eae3d5] p-2.5 rounded-full shadow-2xs cursor-pointer flex items-center gap-1"

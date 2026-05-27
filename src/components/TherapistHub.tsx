@@ -1,80 +1,20 @@
 import React from "react";
 import { Therapist, TherapistStatus } from "../types";
-import { Zap, Calendar, Star, Shield, ToggleLeft, ToggleRight, Sparkles, MapPin } from "lucide-react";
+import { Zap, Calendar, Star, Shield, MapPin } from "lucide-react";
 
 interface TherapistHubProps {
   therapists: Therapist[];
-  onToggleStatus: (therapistId: string) => void;
   onBookImmediate: (therapist: Therapist) => void;
   onBookScheduled: (therapist: Therapist) => void;
 }
 
 export default function TherapistHub({
   therapists,
-  onToggleStatus,
   onBookImmediate,
   onBookScheduled,
 }: TherapistHubProps) {
   return (
     <div className="bg-[#fbfcfa] border border-[#eae3d5] rounded-2xl p-6 shadow-xs" id="therapist-hub-container">
-      {/* Simulator Banner */}
-      <div className="mb-8 bg-[#f5eeda] border-l-4 border-spa-gold p-4 rounded-r-xl">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h4 className="font-serif-spa font-semibold text-[#1c2c31] text-base flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-spa-gold animate-pulse" />
-              Live Spa Simulator Console (Testing Suite)
-            </h4>
-            <p className="text-xs text-spa-navy/80 mt-1 max-w-2xl">
-              The user asked to see <strong>Available Now</strong> girls vs <strong>Unavailable</strong>. Toggle status switches below to simulate real-time shifts. Immediate dispatch buttons (Order Now) react dynamically.
-            </p>
-          </div>
-          <div className="flex items-center gap-2 text-xs bg-white py-1.5 px-3 rounded-lg shadow-2xs self-start sm:self-auto border border-[#eae3d5]">
-            <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-ping"></span>
-            <span className="font-medium text-[#1c2c31] font-mono-spa">Auto dispatch ACTIVE</span>
-          </div>
-        </div>
-
-        {/* Status Toggles Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
-          {therapists.map((girl) => {
-            const isAvailable = girl.status === TherapistStatus.AVAILABLE_NOW;
-            return (
-              <button
-                key={girl.id}
-                onClick={() => onToggleStatus(girl.id)}
-                className={`flex items-center justify-between gap-2 p-2.5 rounded-lg border text-xs font-medium cursor-pointer transition-all duration-200 ${
-                  isAvailable
-                    ? "bg-green-50/60 border-green-200 text-green-800 hover:bg-green-100/50 shadow-2xs"
-                    : "bg-amber-50/60 border-amber-200 text-amber-800 hover:bg-amber-100/50 shadow-2xs"
-                }`}
-                title={`Click to toggle ${girl.name}'s status`}
-              >
-                <div className="flex items-center gap-2">
-                  <img
-                    src={girl.avatar}
-                    alt={girl.name}
-                    className="w-6 h-6 rounded-full object-cover border border-[#c5a47e]"
-                    referrerPolicy="no-referrer"
-                  />
-                  <span>{girl.name}</span>
-                </div>
-                <div className="flex items-center gap-1 font-mono-spa">
-                  <span className="text-[10px] uppercase">
-                    {isAvailable ? "Online" : "Busy"}
-                  </span>
-                  {isAvailable ? (
-                    <ToggleRight className="w-5 h-5 text-green-600" />
-                  ) : (
-                    <ToggleLeft className="w-5 h-5 text-amber-500" />
-                  )}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
       {/* Main Section Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-2">
         <div>

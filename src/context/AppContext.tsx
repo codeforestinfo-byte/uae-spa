@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 import { Therapist, TherapistStatus, Service, Review, Appointment } from "../types";
 import {
   fetchServices,
@@ -6,10 +7,10 @@ import {
   fetchReviews,
   fetchCategories,
   fetchAreas,
-  updateTherapistStatus,
   insertReview,
   insertAppointment,
 } from "../lib/api";
+import { auth } from "../lib/firebase";
 
 interface AppContextType {
   therapists: Therapist[];
@@ -28,7 +29,6 @@ interface AppContextType {
   setPreSelectedService: (v: Service | null) => void;
   setPreSelectedTherapist: (v: Therapist | null) => void;
   setInitialOrderNow: (v: boolean) => void;
-  handleToggleTherapistStatus: (id: string) => void;
   handleBookImmediate: (therapist: Therapist) => void;
   handleBookScheduled: (therapist: Therapist) => void;
   handleBookService: (service: Service) => void;
@@ -39,7 +39,8 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | null>(null);
 
-export function AppProvider({ children }: { children: ReactNode }) {
+function AppProviderInner({ children }: { children: ReactNode }) {
+  const navigate = useNavigate();
   const [therapists, setTherapists] = useState<Therapist[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [services, setServices] = useState<Service[]>([]);
@@ -50,6 +51,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [preSelectedService, setPreSelectedService] = useState<Service | null>(null);
   const [preSelectedTherapist, setPreSelectedTherapist] = useState<Therapist | null>(null);
   const [initialOrderNow, setInitialOrderNow] = useState(false);
+
+  const requireAuth = () => {
+    if (!auth.currentUser) {
+      navigate("/login");
+      return false;
+    }
+    return true;
+  };
+
+  const guardedSetBookingOpen = (v: boolean) => {
+    if (v === true && !auth.currentUser) {
+      navigate("/login");
+      return;
+    }
+    setBookingOpen(v);
+  };
 
   useEffect(() => {
     async function load() {
@@ -80,36 +97,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     reviews.reduce((acc, r) => acc + r.rating, 0) / (totalReviewsCount || 1)
   ).toFixed(1);
 
-  const handleToggleTherapistStatus = async (therapistId: string) => {
-    setTherapists((prev) => {
-      const updated = prev.map((t) => {
-        if (t.id === therapistId) {
-          const nextStatus =
-            t.status === TherapistStatus.AVAILABLE_NOW
-              ? TherapistStatus.UNAVAILABLE
-              : TherapistStatus.AVAILABLE_NOW;
-          return {
-            ...t,
-            status: nextStatus,
-            nextAvailableTime:
-              nextStatus === TherapistStatus.UNAVAILABLE ? "Today 7:00 PM" : undefined,
-          };
-        }
-        return t;
-      });
-      const t = updated.find((x) => x.id === therapistId);
-      if (t) {
-        updateTherapistStatus(
-          therapistId,
-          t.status === TherapistStatus.AVAILABLE_NOW ? "available" : "unavailable",
-          t.nextAvailableTime
-        );
-      }
-      return updated;
-    });
-  };
-
   const handleBookImmediate = (therapist: Therapist) => {
+    if (!requireAuth()) return;
     const srv = services.find((s) => s.category === therapist.specialties[0]) || services[0];
     setPreSelectedTherapist(therapist);
     setPreSelectedService(srv);
@@ -118,6 +107,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const handleBookScheduled = (therapist: Therapist) => {
+    if (!requireAuth()) return;
     const srv = services.find((s) => s.category === therapist.specialties[0]) || services[0];
     setPreSelectedTherapist(therapist);
     setPreSelectedService(srv);
@@ -126,6 +116,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const handleBookService = (service: Service) => {
+    if (!requireAuth()) return;
     setPreSelectedService(service);
     const match = therapists.find((t) => t.specialties.includes(service.category)) || therapists[0];
     setPreSelectedTherapist(match);
@@ -174,6 +165,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const openBooking = (service?: Service, therapist?: Therapist) => {
+    if (!requireAuth()) return;
     const s = service || services[0];
     const t = therapist || therapists.find((th) => th.specialties.includes(s.category)) || therapists[0];
     setPreSelectedService(s);
@@ -197,11 +189,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         loading,
         categories,
         areas,
-        setBookingOpen,
+        setBookingOpen: guardedSetBookingOpen,
         setPreSelectedService,
         setPreSelectedTherapist,
         setInitialOrderNow,
-        handleToggleTherapistStatus,
         handleBookImmediate,
         handleBookScheduled,
         handleBookService,
@@ -213,6 +204,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       {children}
     </AppContext.Provider>
   );
+}
+
+export function AppProvider({ children }: { children: ReactNode }) {
+  return <AppProviderInner>{children}</AppProviderInner>;
 }
 
 export function useApp() {

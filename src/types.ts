@@ -41,14 +41,16 @@ export interface Appointment {
   serviceId: string;
   therapistId: string;
   dateTime: string;
-  orderNow: boolean; // true if immediate home dispatch
+  orderNow: boolean;
   customerName: string;
   customerPhone: string;
   customerAddress: string;
-  customerArea: string; // Abu Dhabi areas: Al Reem Island, Al Khalidiyah, Al Zahiyah, etc.
-  paymentMethod: "app" | "cash_or_card";
+  customerArea: string;
+  paymentMethod: "app" | "cash_or_card" | "google_pay";
   status: "confirmed" | "completed";
   createdAt: string;
+  transactionId?: string;
+  paymentStatus?: "pending" | "completed" | "failed";
 }
 
 export interface Voucher {

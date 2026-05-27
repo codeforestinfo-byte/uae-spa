@@ -24,3 +24,11 @@ body {
 .font-mono-spa {
   font-family: var(--font-mono);
 }
+
+.stripe-payment-wrapper .__PrivateStripeElement {
+  width: 100% !important;
+}
+
+.stripe-payment-wrapper iframe {
+  width: 100% !important;
+}

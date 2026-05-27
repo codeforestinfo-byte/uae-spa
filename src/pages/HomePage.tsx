@@ -19,7 +19,6 @@ export default function HomePage() {
     preSelectedTherapist,
     initialOrderNow,
     setBookingOpen,
-    handleToggleTherapistStatus,
     handleBookImmediate,
     handleBookScheduled,
     handleBookService,
@@ -106,7 +105,6 @@ export default function HomePage() {
               <div className="space-y-8">
                 <TherapistHub
                   therapists={therapists}
-                  onToggleStatus={handleToggleTherapistStatus}
                   onBookImmediate={handleBookImmediate}
                   onBookScheduled={handleBookScheduled}
                 />

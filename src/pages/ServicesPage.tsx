@@ -5,7 +5,7 @@ import TherapistHub from "../components/TherapistHub";
 import { Sparkles, ArrowRight } from "lucide-react";
 
 export default function ServicesPage() {
-  const { therapists, services, categories, handleToggleTherapistStatus, handleBookImmediate, handleBookScheduled, handleBookService } = useApp();
+  const { therapists, services, categories, handleBookImmediate, handleBookScheduled, handleBookService } = useApp();
   const [searchParams] = useSearchParams();
   const treatmentParam = searchParams.get("treatment");
   const [chosenCategory, setChosenCategory] = useState(treatmentParam || "All");
@@ -32,7 +32,6 @@ export default function ServicesPage() {
 
       <TherapistHub
         therapists={therapists}
-        onToggleStatus={handleToggleTherapistStatus}
         onBookImmediate={handleBookImmediate}
         onBookScheduled={handleBookScheduled}
       />

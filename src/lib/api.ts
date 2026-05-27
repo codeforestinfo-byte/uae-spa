@@ -1,4 +1,5 @@
 import { supabase, supabaseAdmin } from "./supabase";
+import { TherapistStatus } from "../types";
 import type { Therapist, Service, Review, Appointment, Voucher } from "../types";
 
 // Services
@@ -42,7 +43,7 @@ export async function fetchTherapists(): Promise<Therapist[]> {
     rating: t.rating || 5.0,
     reviewsCount: t.reviews_count || 0,
     avatar: t.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(t.name)}&background=c5a47e&color=fff`,
-    status: t.status === "available" ? "AVAILABLE_NOW" as const : "UNAVAILABLE" as const,
+    status: t.status === "available" ? TherapistStatus.AVAILABLE_NOW : TherapistStatus.UNAVAILABLE,
     nextAvailableTime: t.next_available_time || undefined,
     bio: t.bio || "",
   }));
@@ -92,7 +93,9 @@ export async function insertAppointment(appointment: Appointment) {
     appointment_time: appointment.dateTime?.split("T")[1]?.split("+")[0] || "12:00",
     address: appointment.customerAddress,
     area: appointment.customerArea,
-    payment_method: appointment.paymentMethod === "app" ? "app" : "cash_or_card",
+    payment_method: appointment.paymentMethod === "google_pay" ? "google_pay" : appointment.paymentMethod === "app" ? "app" : "cash_or_card",
+    payment_status: appointment.paymentStatus || "pending",
+    transaction_id: appointment.transactionId || null,
     status: appointment.status,
     notes: `Order now: ${appointment.orderNow}, Customer: ${appointment.customerName}, Phone: ${appointment.customerPhone}`,
   });

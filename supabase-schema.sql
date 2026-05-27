@@ -2,6 +2,71 @@
 -- SPA Booking System - Database Schema
 -- ============================================
 
+-- User profiles (extends Supabase auth.users)
+CREATE TABLE IF NOT EXISTS user_profiles (
+  id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
+  full_name TEXT NOT NULL,
+  phone TEXT,
+  date_of_birth DATE,
+  gender TEXT,
+  address TEXT,
+  area TEXT,
+  city TEXT DEFAULT 'Abu Dhabi',
+  preferences TEXT[],
+  avatar_url TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own profile" ON user_profiles
+  FOR SELECT USING (auth.uid() = id);
+
+CREATE POLICY "Users can insert own profile" ON user_profiles
+  FOR INSERT WITH CHECK (auth.uid() = id);
+
+CREATE POLICY "Users can update own profile" ON user_profiles
+  FOR UPDATE USING (auth.uid() = id);
+
+-- User appointments history view
+CREATE VIEW user_appointments_view AS
+SELECT
+  a.id,
+  a.client_id,
+  a.service_id,
+  s.name AS service_name,
+  a.therapist_id,
+  t.name AS therapist_name,
+  a.appointment_date,
+  a.appointment_time,
+  a.address,
+  a.area,
+  a.payment_method,
+  a.payment_status,
+  a.status,
+  a.notes,
+  a.created_at
+FROM appointments a
+LEFT JOIN services s ON a.service_id = s.id
+LEFT JOIN therapists t ON a.therapist_id = t.id;
+
+-- Function to handle new user signup
+CREATE OR REPLACE FUNCTION handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.user_profiles (id, full_name)
+  VALUES (NEW.id, COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email));
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger to auto-create profile on signup
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+
 -- Categories
 CREATE TABLE IF NOT EXISTS categories (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -65,6 +130,8 @@ CREATE TABLE IF NOT EXISTS appointments (
   address TEXT,
   area TEXT,
   payment_method TEXT DEFAULT 'cash',
+  payment_status TEXT DEFAULT 'pending',
+  transaction_id TEXT,
   status TEXT DEFAULT 'confirmed',
   notes TEXT,
   created_at TIMESTAMPTZ DEFAULT now()
